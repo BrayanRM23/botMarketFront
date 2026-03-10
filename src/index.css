@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+/* Colores de marca (evita usar @config para que el linter no marque "unknown at rule") */
+@theme {
+  --color-brand-400: #a5b4fc;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #3730a3;
+}
+
+/* Base styles */
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: #020617;
+  color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: #818cf8;
+  font-weight: 500;
+}
+
+a:hover {
+  color: #a5b4fc;
+}
