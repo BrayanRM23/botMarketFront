@@ -1,17 +1,31 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import { Pencil } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
+import CalendarSettings from '../../components/dashboard/CalendarSettings.jsx';
 
 export default function EditBotPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { api } = useAuth();
 
   const [form, setForm] = useState({ name: '', description: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Detectar retorno del flujo OAuth de Google Calendar
+  useEffect(() => {
+    const calendarStatus = searchParams.get('calendar');
+    if (calendarStatus === 'connected') {
+      toast.success('Google Calendar conectado correctamente.');
+      setSearchParams({}, { replace: true });
+    } else if (calendarStatus === 'error') {
+      toast.error('No se pudo conectar Google Calendar. Intenta de nuevo.');
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     const fetchBot = async () => {
@@ -63,10 +77,11 @@ export default function EditBotPage() {
           Editar bot
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          Actualiza el nombre y el contexto de tu asistente.
+          Actualiza el nombre, el contexto y las integraciones de tu asistente.
         </p>
       </div>
 
+      {/* Formulario principal */}
       <form
         onSubmit={handleSubmit}
         className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 md:p-6"
@@ -118,7 +133,9 @@ export default function EditBotPage() {
           </button>
         </div>
       </form>
+
+      {/* Sección de Google Calendar */}
+      <CalendarSettings botId={id} />
     </div>
   );
 }
-
