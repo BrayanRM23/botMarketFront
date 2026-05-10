@@ -4,6 +4,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import { Pencil } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import CalendarSettings from '../../components/dashboard/CalendarSettings.jsx';
+import FileKnowledgeUploader from '../../components/dashboard/FileKnowledgeUploader.jsx';
 
 export default function EditBotPage() {
   const { id } = useParams();
@@ -102,9 +103,12 @@ export default function EditBotPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-200" htmlFor="description">
-            Descripción / Base de conocimiento
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-slate-200" htmlFor="description">
+              Descripción / Base de conocimiento
+            </label>
+            <span className="text-xs text-slate-500">{form.description.length.toLocaleString()} caracteres</span>
+          </div>
           <textarea
             id="description"
             name="description"
@@ -113,6 +117,18 @@ export default function EditBotPage() {
             onChange={handleChange}
             className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 shadow-sm outline-none ring-0 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/40"
           />
+          <div className="mt-3">
+            <FileKnowledgeUploader
+              onExtracted={(text) =>
+                setForm((prev) => ({
+                  ...prev,
+                  description: prev.description
+                    ? `${prev.description}\n\n---\n${text}`
+                    : text,
+                }))
+              }
+            />
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-3">
