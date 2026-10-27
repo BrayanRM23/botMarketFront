@@ -46,7 +46,8 @@ export default function ChatPage() {
     setSending(true);
 
     try {
-      const res = await axios.post(`${API_BASE}/bots/${botId}/chat`, { message: text });
+      const history = messages.map((m) => ({ role: m.role, content: m.content }));
+      const res = await axios.post(`${API_BASE}/bots/${botId}/chat`, { message: text, history });
       setMessages((prev) => [...prev, { role: 'assistant', content: res.data.reply }]);
     } catch (err) {
       const msg = err?.response?.data?.message || 'Error al enviar el mensaje.';
