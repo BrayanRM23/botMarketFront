@@ -1,28 +1,33 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useAuth as useAuthContext } from '../../context/AuthContext.jsx';
 
 export default function DashboardHome() {
-  const { user, api } = useAuthContext();
-  const [stats, setStats] = useState({ totalBots: 0, totalConversations: 0 });
+  const { user, api } = useAuth();
+  const [weekConversations, setWeekConversations] = useState(null);
+  const [stats, setStats] = useState({ totalBots: 0 });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    let cancelled = false;
+
+    const load = async () => {
       try {
-        const res = await api.get('/stats/overview');
-        setStats({
-          totalBots: res.data.totalBots,
-          totalConversations: res.data.totalConversations,
-        });
+        const res = await api.get('/stats/overview', { params: { days: 7 } });
+        if (cancelled) return;
+        setStats({ totalBots: res.data.totalBots });
+        setWeekConversations(res.data.kpis.conversations);
       } catch {
-        // para el home podemos ignorar errores y dejar en 0
+        if (!cancelled) setError(true);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
-    fetchStats();
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, [api]);
 
   return (
@@ -48,10 +53,10 @@ export default function DashboardHome() {
         </div>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            Conversaciones totales
+            Conversaciones (7 días)
           </p>
           <p className="mt-2 text-2xl font-semibold text-slate-50">
-            {loading ? '—' : stats.totalConversations}
+            {loading ? '—' : error ? 'Sin datos' : weekConversations}
           </p>
         </div>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
@@ -64,4 +69,3 @@ export default function DashboardHome() {
     </div>
   );
 }
-

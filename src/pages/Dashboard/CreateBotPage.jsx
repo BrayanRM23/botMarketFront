@@ -24,10 +24,10 @@ export default function CreateBotPage() {
 
     setLoading(true);
     try {
-      await api.post('/bots', form);
-      toast.success('Bot creado correctamente');
+      const res = await api.post('/bots', form);
+      toast.success('Bot creado. Ahora puedes subir sus archivos de conocimiento.');
       setForm({ name: '', description: '' });
-      navigate('/dashboard/bots');
+      navigate(`/dashboard/bots/${res.data.bot._id}/edit`);
     } catch (error) {
       const message = error?.response?.data?.message || 'No se pudo crear el bot.';
       toast.error(message);
@@ -69,9 +69,12 @@ export default function CreateBotPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-200" htmlFor="description">
-            Descripción / Base de conocimiento
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-slate-200" htmlFor="description">
+              Instrucciones y contexto del negocio
+            </label>
+            <span className="text-xs text-slate-500">{form.description.length.toLocaleString()} caracteres</span>
+          </div>
           <textarea
             id="description"
             name="description"
@@ -81,6 +84,9 @@ export default function CreateBotPage() {
             className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 shadow-sm outline-none ring-0 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/40"
             placeholder="Describe el negocio, FAQs, procesos, tono de voz y cualquier información relevante para que el bot responda mejor."
           />
+          <p className="mt-2 text-xs text-slate-500">
+            Los archivos (PDF, Excel, CSV) se suben después de crear el bot, desde su edición.
+          </p>
         </div>
 
         <div className="flex items-center justify-end gap-3">

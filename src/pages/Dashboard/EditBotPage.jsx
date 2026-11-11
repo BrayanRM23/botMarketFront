@@ -4,6 +4,15 @@ import { Toaster, toast } from 'react-hot-toast';
 import { Pencil } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import CalendarSettings from '../../components/dashboard/CalendarSettings.jsx';
+import FileKnowledgeUploader from '../../components/dashboard/FileKnowledgeUploader.jsx';
+
+const TONE_OPTIONS = [
+  { value: '', label: 'Sin definir (solo lo que digan las instrucciones)' },
+  { value: 'formal', label: 'Formal: trata de "usted", sin coloquialismos' },
+  { value: 'amable', label: 'Amable: cálido, cortés y paciente' },
+  { value: 'cercano', label: 'Cercano: conversacional, puede tutear' },
+  { value: 'directo', label: 'Directo: breve y concreto' },
+];
 
 export default function EditBotPage() {
   const { id } = useParams();
@@ -11,7 +20,7 @@ export default function EditBotPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { api } = useAuth();
 
-  const [form, setForm] = useState({ name: '', description: '' });
+  const [form, setForm] = useState({ name: '', description: '', tone: '', toneNotes: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -31,7 +40,13 @@ export default function EditBotPage() {
     const fetchBot = async () => {
       try {
         const res = await api.get(`/bots/${id}`);
-        setForm({ name: res.data.bot.name, description: res.data.bot.description || '' });
+        const { bot } = res.data;
+        setForm({
+          name: bot.name,
+          description: bot.description || '',
+          tone: bot.tone || '',
+          toneNotes: bot.toneNotes || '',
+        });
       } catch (error) {
         const message = error?.response?.data?.message || 'No se pudo cargar el bot.';
         toast.error(message);
@@ -101,10 +116,52 @@ export default function EditBotPage() {
           />
         </div>
 
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-slate-200" htmlFor="tone">
+              Tono del asistente
+            </label>
+            <select
+              id="tone"
+              name="tone"
+              value={form.tone}
+              onChange={handleChange}
+              className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/40"
+            >
+              {TONE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-200" htmlFor="toneNotes">
+                Indicaciones de tono (opcional)
+              </label>
+              <span className="text-xs text-slate-500">{form.toneNotes.length}/500</span>
+            </div>
+            <input
+              id="toneNotes"
+              name="toneNotes"
+              type="text"
+              maxLength={500}
+              value={form.toneNotes}
+              onChange={handleChange}
+              placeholder="Ej. Usa emojis con moderación y despídete con el nombre del negocio"
+              className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/40"
+            />
+          </div>
+        </div>
+
         <div>
-          <label className="block text-sm font-medium text-slate-200" htmlFor="description">
-            Descripción / Base de conocimiento
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-slate-200" htmlFor="description">
+              Instrucciones y contexto del negocio
+            </label>
+            <span className="text-xs text-slate-500">{form.description.length.toLocaleString()} caracteres</span>
+          </div>
           <textarea
             id="description"
             name="description"
@@ -113,6 +170,9 @@ export default function EditBotPage() {
             onChange={handleChange}
             className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 shadow-sm outline-none ring-0 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/40"
           />
+          <div className="mt-3">
+            <FileKnowledgeUploader botId={id} />
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-3">
